@@ -124,7 +124,7 @@ class TownRepository @Inject constructor(
         flags.townBuildingTiers.forEach { buildingName, tier ->
             multiplier *= carnivalCooldownFactor(buildingName, tier)
         }
-        return (multiplier * 600_000).toLong()
+        return (multiplier * 600_000 * com.fantasyidler.util.TimeScale.FACTOR).toLong()
     }
 
     /** Calculates the multiplier for the idle tickets in the fairgrounds */

@@ -172,7 +172,7 @@ object PrestigeBoosts {
         if (rate <= 0.0 || elapsedMs <= 0L) return 1.0
         val interval = (FLOW_BASE_INTERVAL_MIN - effectTotal(trees, flags, skill, FLOW_INTERVAL_REDUCTION))
             .coerceAtLeast(10.0)
-        val intervals = (elapsedMs / 60_000.0 / interval).toInt()
+        val intervals = (elapsedMs / (60_000.0 * com.fantasyidler.util.TimeScale.FACTOR) / interval).toInt()
         val pct = (intervals * rate).coerceAtMost(FLOW_CAP_PCT)
         return 1.0 + pct / 100.0
     }

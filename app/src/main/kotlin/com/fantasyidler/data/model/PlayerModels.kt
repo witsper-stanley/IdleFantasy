@@ -514,7 +514,10 @@ data class QueuedAction(
 enum class WorkerTier {
     LONG_LABORER, APPRENTICE, JOURNEYMAN, MASTER;
 
-    val durationMs: Long get() = when (this) {
+    val durationMs: Long get() = com.fantasyidler.util.TimeScale.scale(baseDurationMs)
+
+    /** Original (unscaled) shift length; rewards are still based on this. */
+    private val baseDurationMs: Long get() = when (this) {
         LONG_LABORER -> 8L * 60 * 60_000L
         APPRENTICE   -> 8L * 60 * 60_000L
         JOURNEYMAN   -> 6L * 60 * 60_000L
@@ -539,7 +542,7 @@ enum class WorkerTier {
 
     /** Per-item time for crafting/prayer/runecrafting sessions, scaled by efficiencyMultiplier
      *  (1 min/item at 1.0x, faster above, slower below) so higher tiers craft faster, not just longer. */
-    val craftingPerItemMs: Long get() = (60_000L / efficiencyMultiplier).toLong()
+    val craftingPerItemMs: Long get() = com.fantasyidler.util.TimeScale.scale((60_000L / efficiencyMultiplier).toLong())
 
     /** Effective session duration for the crafting estimate display formula (perItemMs * 60). */
     val craftingSessionMs: Long get() = craftingPerItemMs * 60L
@@ -551,7 +554,7 @@ enum class WorkerTier {
     /** Combined multiplier applied to gathering/combat loot and XP at collect time.
      *  = (session hours) × efficiencyMultiplier */
     val combinedGatheringMultiplier: Float get() =
-        (durationMs / (60L * 60_000L)).toFloat() * efficiencyMultiplier
+        (baseDurationMs / (60L * 60_000L)).toFloat() * efficiencyMultiplier
 }
 
 @Serializable

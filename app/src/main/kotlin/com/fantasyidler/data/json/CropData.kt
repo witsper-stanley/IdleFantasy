@@ -17,5 +17,5 @@ data class CropData(
     @SerialName("yield_max")                 val yieldMax: Int,
     @SerialName("seed_cost")                 val seedCost: Int = 0,
 ) {
-    val growthTimeMs: Long get() = growthTimeHours.toLong() * 3_600_000L
+    val growthTimeMs: Long get() = com.fantasyidler.util.TimeScale.scale(growthTimeHours.toLong() * 3_600_000L)
 }

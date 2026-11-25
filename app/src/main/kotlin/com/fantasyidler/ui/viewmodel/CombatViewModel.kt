@@ -856,7 +856,7 @@ class CombatViewModel @Inject constructor(
                 // never warned. The sim input below reserves honestly, and a starved
                 // run simply loses and stops the chain.
                 val bossName     = GameStrings.bossName(context, bossKey)
-                val bossMs       = (gameData.bosses[bossKey]?.durationMinutes ?: 1) * 60_000L
+                val bossMs       = com.fantasyidler.util.TimeScale.scale((gameData.bosses[bossKey]?.durationMinutes ?: 1) * 60_000L)
                 val queuedPlayer = playerRepo.getOrCreatePlayer()
                 val queuedFlags: PlayerFlags          = json.decodeFromString(queuedPlayer.flags)
                 val queuedEquipped: Map<String, String?> = json.decodeFromString(queuedPlayer.equipped)

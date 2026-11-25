@@ -1,9 +1,8 @@
 name: CI
 
+# Fork: upstream tests expect the original timers, so this only runs when started by hand.
 on:
-  push:
-    branches: [main]
-  pull_request:
+  workflow_dispatch:
 
 # Cancel superseded runs on the same ref to save CI minutes.
 concurrency:

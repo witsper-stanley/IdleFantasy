@@ -732,14 +732,14 @@ class PlayerRepository @Inject constructor(
      *  Gilded stage. Elder Isle caps at the base 3 — none of those mainland slot boosts
      *  reach isle sessions, per the isle bonus-flow rule. */
     fun maxQueueSize(flags: PlayerFlags): Int {
-        if (flags.onElderIsle) return 3
+        if (flags.onElderIsle) return 10
         var extraSlots = boostRepo.extraQueueSlots(flags)
         flags.townBuildingTiers.forEach { (buildingName, tier) ->
             val bonuses = gameData.townBuildings[buildingName]?.tiers?.getOrNull(tier - 1)?.bonuses
             extraSlots += bonuses?.get("queue_slots")?.toInt() ?: 0
         }
         if (flags.monumentTier >= 4) extraSlots += 1
-        return 3 + extraSlots
+        return 10 + extraSlots
     }
 
     /** Appends an action to the queue. Returns false (no change) if the queue is already full. */

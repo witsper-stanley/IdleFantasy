@@ -418,7 +418,7 @@ object SkillSimulator {
         val minutes = (60.0 - maxReduction * fraction) * chronosMultiplier.coerceIn(0.5f, 1.0f)
         // Millisecond precision: rounding to whole minutes swallowed the 2% Chronos Spire
         // reduction entirely at many agility levels (issue #1486).
-        return (minutes * 60_000.0).roundToLong().coerceAtLeast(60_000L)
+        return (minutes * 60_000.0 * com.fantasyidler.util.TimeScale.FACTOR).roundToLong().coerceAtLeast(com.fantasyidler.util.TimeScale.scale(60_000L))
     }
 
     /**
@@ -430,7 +430,7 @@ object SkillSimulator {
     fun elderSessionDurationMs(elderAgilityLevel: Int): Long {
         val fraction = (elderAgilityLevel - 1).coerceIn(0, 98) / 98.0
         val minutes = 60.0 - 15.0 * fraction
-        return (minutes * 60_000.0).roundToLong().coerceAtLeast(45L * 60_000L)
+        return (minutes * 60_000.0 * com.fantasyidler.util.TimeScale.FACTOR).roundToLong().coerceAtLeast(com.fantasyidler.util.TimeScale.scale(45L * 60_000L))
     }
 
     /**
