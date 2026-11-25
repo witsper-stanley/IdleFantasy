@@ -25,6 +25,9 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
+      - name: Use the fork's fixed signing key (so new builds install over old ones)
+        run: mkdir -p ~/.android && cp .github/signing/debug.keystore ~/.android/debug.keystore
+
       - name: Assemble debug APK
         run: ./gradlew assembleDebug --stacktrace
 
