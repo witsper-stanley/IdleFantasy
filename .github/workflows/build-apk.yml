@@ -25,19 +25,30 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
-      - name: Use the fork's fixed signing key (so new builds install over old ones)
-        run: mkdir -p ~/.android && cp .github/signing/debug.keystore ~/.android/debug.keystore
+      # Release build = no debug/developer tools. Signed with the fork's fixed key
+      # (same certificate as the earlier debug builds) so it installs over them.
+      - name: Install the fork's signing key
+        run: mkdir -p ~/.android && cp .github/signing/release.jks ~/.android/defide-release.jks
 
-      - name: Assemble debug APK
-        run: ./gradlew assembleDebug --stacktrace
+      - name: Assemble release APK
+        env:
+          DEFIDE_STORE_PASSWORD: android
+          DEFIDE_KEY_PASSWORD: android
+        run: ./gradlew assembleRelease --stacktrace
+
+      - name: Check the APK is signed with the fork's key
+        run: |
+          APK=$(ls app/build/outputs/apk/release/*.apk | head -n 1)
+          SIGNER=$(ls "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -n 1)
+          "$SIGNER" verify --print-certs "$APK" | tee certs.txt
+          grep -qi "b9a188681ed39f70ff45143f769f983aa3dbd223c01eb38766973be668fcba76" certs.txt
+          cp "$APK" IdleFantasy-mod.apk
 
       - name: Publish as the "latest" release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          APK=$(ls app/build/outputs/apk/debug/*.apk | head -n 1)
-          cp "$APK" IdleFantasy-mod.apk
           gh release delete latest --cleanup-tag -y || true
           gh release create latest IdleFantasy-mod.apk \
             --title "Idle Fantasy mod (build ${{ github.run_number }})" \
-            --notes "Timers at 1/10, queue size 10. Built from ${{ github.sha }}."
+            --notes "Release build (no debug tools). Timers at 1/10, queue size 10. Built from ${{ github.sha }}."
