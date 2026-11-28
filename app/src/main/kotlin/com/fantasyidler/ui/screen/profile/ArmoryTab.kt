@@ -1,4 +1,4 @@
-package com.fantasyidler.ui.screen
+package com.fantasyidler.ui.screen.profile
 
 import android.content.Context
 import androidx.compose.foundation.background
@@ -41,14 +41,15 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.fantasyidler.R
 import com.fantasyidler.data.json.EquipmentData
-import com.fantasyidler.ui.viewmodel.ArmoryEntry
-import com.fantasyidler.ui.viewmodel.ArmoryFilter
-import com.fantasyidler.ui.viewmodel.ArmorySort
-import com.fantasyidler.ui.viewmodel.ArmoryViewModel
+import com.fantasyidler.ui.viewmodel.profile.ArmoryEntry
+import com.fantasyidler.ui.viewmodel.profile.ArmoryFilter
+import com.fantasyidler.ui.viewmodel.profile.ArmorySort
+import com.fantasyidler.ui.viewmodel.profile.ArmoryViewModel
 import com.fantasyidler.ui.theme.ScaledSheetContent
 import com.fantasyidler.simulator.HeirloomStats
 import com.fantasyidler.simulator.XpTable
 import com.fantasyidler.ui.components.CompletionProgressBar
+import com.fantasyidler.ui.screen.buildEquipDetail
 import com.fantasyidler.util.GameStrings
 
 private val COMBAT_CAPE_SKILLS = setOf(
@@ -58,69 +59,73 @@ private val COMBAT_CAPE_SKILLS = setOf(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ArmoryTab(viewModel: ArmoryViewModel = hiltViewModel()) {
+internal fun ArmoryTab(viewModel: ArmoryViewModel = hiltViewModel()) {
     val state by viewModel.uiState.collectAsState()
     var selectedEntry by remember { mutableStateOf<ArmoryEntry?>(null) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-    Column(Modifier.fillMaxSize()) {
-        if (!state.isLoading && state.totalCount > 0) {
-            CompletionProgressBar(
-                completed = state.totalOwned,
-                total = state.totalCount,
-                label = stringResource(R.string.armory_progress_bar)
-            )
-        }
-        Row(
-            modifier = Modifier
-                .horizontalScroll(rememberScrollState())
-                .padding(horizontal = 12.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            ArmoryFilter.entries.forEach { f ->
-                FilterChip(
-                    selected = state.filter == f,
-                    onClick  = { viewModel.setFilter(f) },
-                    label    = { Text(filterLabel(f)) },
-                )
-            }
-        }
-        Row(
-            modifier = Modifier
-                .horizontalScroll(rememberScrollState())
-                .padding(start = 12.dp, end = 12.dp, bottom = 4.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            ArmorySort.entries.forEach { s ->
-                FilterChip(
-                    selected = state.sort == s,
-                    onClick  = { viewModel.setSort(s) },
-                    label    = { Text(sortLabel(s)) },
-                )
-            }
-        }
-
-        val groupContext = LocalContext.current
-        val grouped = remember(state.entries) { buildSlotGroups(groupContext, state.entries) }
-        val listState = rememberLazyListState()
-        LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
-            grouped.forEach { (groupName, entries) ->
-                item(key = "header_$groupName") {
-                    Text(
-                        text     = groupName,
-                        style    = MaterialTheme.typography.labelMedium,
-                        color    = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
+    val groupContext = LocalContext.current
+    val grouped = remember(state.entries) { buildSlotGroups(groupContext, state.entries) }
+    val listState = rememberLazyListState()
+    // Progress and filters scroll away with the list so it gets the whole tab (issue #2146).
+    LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
+        item(key = "armory_header") {
+            Column {
+                if (!state.isLoading && state.totalCount > 0) {
+                    CompletionProgressBar(
+                        completed = state.totalOwned,
+                        total = state.totalCount,
+                        label = stringResource(R.string.armory_progress_bar)
                     )
-                    HorizontalDivider()
                 }
-                items(entries, key = { "${groupName}_${it.key}" }) { entry ->
-                    ArmoryRow(entry = entry, onClick = { selectedEntry = entry })
-                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+                Spacer(Modifier.height(4.dp))
+                Row(
+                    modifier = Modifier
+                        .horizontalScroll(rememberScrollState())
+                        .padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    ArmoryFilter.entries.forEach { f ->
+                        FilterChip(
+                            selected = state.filter == f,
+                            onClick  = { viewModel.setFilter(f) },
+                            label    = { Text(filterLabel(f)) },
+                        )
+                    }
                 }
+                Row(
+                    modifier = Modifier
+                        .horizontalScroll(rememberScrollState())
+                        .padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    ArmorySort.entries.forEach { s ->
+                        FilterChip(
+                            selected = state.sort == s,
+                            onClick  = { viewModel.setSort(s) },
+                            label    = { Text(sortLabel(s)) },
+                        )
+                    }
+                }
+                Spacer(Modifier.height(4.dp))
             }
-            item { Spacer(Modifier.height(16.dp)) }
         }
+        grouped.forEach { (groupName, entries) ->
+            item(key = "header_$groupName") {
+                Text(
+                    text     = groupName,
+                    style    = MaterialTheme.typography.labelMedium,
+                    color    = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
+                )
+                HorizontalDivider()
+            }
+            items(entries, key = { "${groupName}_${it.key}" }) { entry ->
+                ArmoryRow(entry = entry, onClick = { selectedEntry = entry })
+                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+            }
+        }
+        item { Spacer(Modifier.height(16.dp)) }
     }
 
     selectedEntry?.let { entry ->
