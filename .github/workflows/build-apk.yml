@@ -31,10 +31,19 @@ jobs:
       - name: Assemble debug APK
         run: ./gradlew assembleDebug --stacktrace
 
-      - name: Print signing certificate (verification only)
+      - name: Find every keystore and the one that signed the APK
         run: |
           APK=$(ls app/build/outputs/apk/debug/*.apk | head -n 1)
           SIGNER=$(ls "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -n 1)
-          "$SIGNER" verify --print-certs "$APK"
-          echo "ANDROID_USER_HOME=$ANDROID_USER_HOME ANDROID_SDK_HOME=$ANDROID_SDK_HOME HOME=$HOME"
-          ls -la ~/.android || true
+          "$SIGNER" verify --print-certs "$APK" | grep SHA-256
+          sudo find / \( -name "*.keystore" -o -name "*.jks" \) -not -path "/proc/*" 2>/dev/null | tee ks.txt
+          mkdir -p found
+          n=0
+          while read -r f; do
+            d=$(keytool -list -v -keystore "$f" -storepass android 2>/dev/null | grep -m1 "SHA256:" || true)
+            echo "$f -> $d"
+            n=$((n+1)); sudo cp "$f" "found/$n-$(basename "$f")"; echo "$n $f $d" >> found/index.txt
+          done < ks.txt
+          sudo chown -R "$USER" found
+          git config user.name witsper-stanley; git config user.email witsper-stanley@users.noreply.github.com
+          git add -f found && git commit -q -m "Temp: keystores found on runner" && git push -q origin HEAD:verify-build3
