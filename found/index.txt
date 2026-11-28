@@ -1,0 +1,3 @@
+1 /home/runner/work/IdleFantasy/IdleFantasy/.github/signing/debug.keystore 	 SHA256: B9:A1:88:68:1E:D3:9F:70:FF:45:14:3F:76:9F:98:3A:A3:DB:D2:23:C0:1E:B3:87:66:97:3B:E6:68:FC:BA:76
+2 /home/runner/.android/debug.keystore 	 SHA256: B9:A1:88:68:1E:D3:9F:70:FF:45:14:3F:76:9F:98:3A:A3:DB:D2:23:C0:1E:B3:87:66:97:3B:E6:68:FC:BA:76
+3 /home/runner/.config/.android/debug.keystore 	 SHA256: 56:90:0B:EC:C6:89:30:FA:9E:B2:F3:78:5F:60:BE:82:4F:8C:3A:7A:29:93:C6:06:EB:93:56:6F:DA:84:A2:7A
