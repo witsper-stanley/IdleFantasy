@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: build-apk
+  group: verify-build3
   cancel-in-progress: true
 
 jobs:
@@ -31,13 +31,10 @@ jobs:
       - name: Assemble debug APK
         run: ./gradlew assembleDebug --stacktrace
 
-      - name: Publish as the "latest" release
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Print signing certificate (verification only)
         run: |
           APK=$(ls app/build/outputs/apk/debug/*.apk | head -n 1)
-          cp "$APK" IdleFantasy-mod.apk
-          gh release delete latest --cleanup-tag -y || true
-          gh release create latest IdleFantasy-mod.apk \
-            --title "Idle Fantasy mod (build ${{ github.run_number }})" \
-            --notes "Timers at 1/10, queue size 10. Built from ${{ github.sha }}."
+          SIGNER=$(ls "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -n 1)
+          "$SIGNER" verify --print-certs "$APK"
+          echo "ANDROID_USER_HOME=$ANDROID_USER_HOME ANDROID_SDK_HOME=$ANDROID_SDK_HOME HOME=$HOME"
+          ls -la ~/.android || true
